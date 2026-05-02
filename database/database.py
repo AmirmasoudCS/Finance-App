@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from models import Transaction
 
 
 class Database:
@@ -50,7 +51,17 @@ class Database:
         with self._connect() as conn:
             rows = conn.execute(query).fetchall()
 
-        return [dict(row) for row in rows]
+        return [
+            Transaction(
+                id=row["id"],
+                type=row["type"],
+                amount=row["amount"],
+                category=row["category"],
+                description=row["description"],
+                date=row["date"]
+            )
+            for row in rows
+        ]
 
     def get_month_summary(self, year, month):
 
