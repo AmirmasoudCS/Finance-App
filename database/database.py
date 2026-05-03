@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 from database.models import Transaction
-
+import calendar
 
 class Database:
 
@@ -65,10 +65,11 @@ class Database:
 
     def get_month_summary(self, year, month):
 
+        last_day = calendar.monthrange(year, month)[1]
         month_str = f"{month:02d}"
         start_date = f"{year}-{month_str}-01"
-        end_date = f"{year}-{month_str}-31"
-
+        end_date = f"{year}-{month_str}-{last_day:02d}"
+        
         with self._connect() as conn:
 
             income = conn.execute(
@@ -96,10 +97,10 @@ class Database:
         }
 
     def get_category_stats(self, year, month):
-
+        last_day =calendar.monthrange(year, month)[1]
         month_str = f"{month:02d}"
         start_date = f"{year}-{month_str}-01"
-        end_date = f"{year}-{month_str}-31"
+        end_date = f"{year}-{month_str}-{last_day:02d}"
 
         query = """
         SELECT category, SUM(amount) AS total
