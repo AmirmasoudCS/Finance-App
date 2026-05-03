@@ -60,9 +60,9 @@ class ReportsPage(QWidget):
             self.expense_label.setText(f"Expenses: {expense:.2f}")
             self.balance_label.setText(f"Net Balance: {balance:.2f}")
             self.category_table.setRowCount(len(cat_stats))
-            for row_idx,row in enumerate(cat_stats):
-                self.category_table.setItem(row_idx, 0, QTableWidgetItem(row["category"]))
-                self.category_table.setItem(row_idx, 1, QTableWidgetItem(f"{row['total']:.2f}"))
+            for row_idx,(category, total) in enumerate(cat_stats.items()):
+                self.category_table.setItem(row_idx, 0, QTableWidgetItem(category))
+                self.category_table.setItem(row_idx, 1, QTableWidgetItem(f"{total:.2f}"))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load report:\n{e}")
 
