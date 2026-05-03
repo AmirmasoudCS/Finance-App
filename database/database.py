@@ -120,7 +120,9 @@ class Database:
                 UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ? WHERE id = ?
                 """
         with self._connect() as conn:
-            conn.execute(query,(type_, amount, category, description, date, transaction_id))
+            cur = conn.execute(query,(type_, amount, category, description, date, transaction_id))
+            conn.commit()
+            return cur.rowcount
     def delete_transaction(self, transaction_id):
         query = """
                 DELETE FROM transactions WHERE id = ?
