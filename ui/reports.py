@@ -33,7 +33,7 @@ class ReportsPage(QWidget):
         self.expense_label = QLabel("Expense: 0.00")
         self.balance_label = QLabel("Net Balance: 0.00")
         for label in (self.income_label, self.expense_label, self.balance_label):
-            label.setAlignment(Qt.AlignLeft)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft)
             label.setStyleSheet("font-size : 14px; font-weight : bold")
         main_layout.addWidget(self.income_label)
         main_layout.addWidget(self.expense_label)
