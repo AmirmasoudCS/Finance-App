@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from models import Transaction
+from database.models import Transaction
 
 
 class Database:
@@ -115,7 +115,7 @@ class Database:
         return {row["category"]: row["SUM(amount)"] for row in rows}
     def update_transaction(self, transaction_id, type_, amount, category, description, date):
         query = """
-                UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ?, WHERE id = ?
+                UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ? WHERE id = ?
                 """
         with self._connect() as conn:
             conn.execute(query,(type_, amount, category, description, date, transaction_id))
@@ -125,4 +125,19 @@ class Database:
                 """
         with self._connect() as conn:
             conn.execute(query,(transaction_id,))
-            
+    def get_transaction_by_id(self, transaction_id):
+        query = """
+                SELECT * FROM transactions WHERE id = ?
+                """
+        with self._connect() as conn:
+            row = conn.execute(query, (transaction_id,)).fetchone()
+            if row :
+                return Transaction(
+                    id=row['id'],
+                    type=row['type'],
+                    amount=row['amount'],
+                    category=row['category'],
+                    description=row['description'],
+                    date=row['date']
+                )
+            return None
