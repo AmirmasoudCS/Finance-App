@@ -64,7 +64,8 @@ class Database:
         ]
 
     def get_month_summary(self, year, month):
-
+        year = int(year)
+        month = int(month)
         last_day = calendar.monthrange(year, month)[1]
         month_str = f"{month:02d}"
         start_date = f"{year}-{month_str}-01"
@@ -97,6 +98,8 @@ class Database:
         }
 
     def get_category_stats(self, year, month):
+        year = int(year)
+        month = int(month)
         last_day =calendar.monthrange(year, month)[1]
         month_str = f"{month:02d}"
         start_date = f"{year}-{month_str}-01"
