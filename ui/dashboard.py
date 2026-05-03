@@ -75,11 +75,11 @@ class DashboardPage(QWidget):
             self.expense_label.setText(f"Expenses: {expenses:.2f}")
             self.balance_label.setText(f"Net Balance: {balance:.2f}")
             cat_stats = self.db.get_category_stats(year, month)
-            top_cats = sorted(cat_stats, key = lambda r: r['total'], reverse=True)[:3]
+            top_cats = sorted(cat_stats.items(), key = lambda x: x[1], reverse=True)[:3]
             self.top_categories_table.setRowCount(len(top_cats))
-            for row_idx, row in enumerate(top_cats):
-                self.top_categories_table.setItem(row_idx, 0, QTableWidgetItem(row['category']))
-                self.top_categories_table.setItem(row_idx, 1, QTableWidgetItem(f"{row['total']:.2f}"))
+            for row_idx, (category, total) in enumerate(top_cats):
+                self.top_categories_table.setItem(row_idx, 0, QTableWidgetItem(category))
+                self.top_categories_table.setItem(row_idx, 1, QTableWidgetItem(f"{total:.2f}"))
             all_transactions = self.db.get_all_transactions()
             recent = sorted(all_transactions, key = lambda t: t.date, reverse=True)[:5]
             self.recent_table.setRowCount(len(recent))
