@@ -26,7 +26,7 @@ class TransactionCategorizer:
                     votes[category]+=1
         if not votes:
             return self.default_category
-        return max(votes, key=votes.get)
+        return max(votes, key=lambda item : item[1][0])
 categorizer = TransactionCategorizer()
 def auto_category(description : str):
     return categorizer.categorize(description)
