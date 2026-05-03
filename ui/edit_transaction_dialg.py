@@ -3,7 +3,7 @@ from PySide6.QtCore import QDate
 from PySide6.QtGui import QDoubleValidator
 from database.database import Database
 class EditTransactionDialog(QDialog):
-    def __init__(self, transaction_id, parent=None):
+    def __init__(self, parent=None, transaction_id=None):
         super().__init__()
         self.db = Database()
         self.transaction_id = transaction_id
