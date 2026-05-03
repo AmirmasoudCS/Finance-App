@@ -113,3 +113,16 @@ class Database:
             rows = conn.execute(query, (start_date, end_date)).fetchall()
 
         return {row["category"]: row["SUM(amount)"] for row in rows}
+    def update_transaction(self, transaction_id, type_, amount, category, description, date):
+        query = """
+                UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ?, WHERE id = ?
+                """
+        with self._connect() as conn:
+            conn.execute(query,(type_, amount, category, description, date, transaction_id))
+    def delete_transaction(self, transaction_id):
+        query = """
+                DELETE FROM transactions WHERE id = ?
+                """
+        with self._connect() as conn:
+            conn.execute(query,(transaction_id,))
+            
