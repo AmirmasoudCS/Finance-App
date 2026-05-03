@@ -102,7 +102,7 @@ class Database:
         end_date = f"{year}-{month_str}-31"
 
         query = """
-        SELECT category, SUM(amount)
+        SELECT category, SUM(amount) AS total
         FROM transactions
         WHERE type='expense' AND date BETWEEN ? AND ?
         GROUP BY category
@@ -112,7 +112,7 @@ class Database:
         with self._connect() as conn:
             rows = conn.execute(query, (start_date, end_date)).fetchall()
 
-        return {row["category"]: row["SUM(amount)"] for row in rows}
+        return {row["category"]: row["total"] for row in rows}
     def update_transaction(self, transaction_id, type_, amount, category, description, date):
         query = """
                 UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ? WHERE id = ?
