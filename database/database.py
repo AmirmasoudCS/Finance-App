@@ -31,7 +31,7 @@ class Database:
             conn.execute(query)
 
     def add_transaction(self, type_, amount, category, description, date):
-
+        type_ = type_.lower()
         query = """
         INSERT INTO transactions(type, amount, category, description, date)
         VALUES(?, ?, ?, ?, ?)
@@ -115,6 +115,7 @@ class Database:
 
         return {row["category"]: row["total"] for row in rows}
     def update_transaction(self, transaction_id, type_, amount, category, description, date):
+        type_ = type_.lower()
         query = """
                 UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ? WHERE id = ?
                 """
