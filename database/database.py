@@ -106,7 +106,7 @@ class Database:
         FROM transactions
         WHERE type='expense' AND date BETWEEN ? AND ?
         GROUP BY category
-        ORDER BY SUM(amount) DESC
+        ORDER BY total DESC
         """
 
         with self._connect() as conn:
