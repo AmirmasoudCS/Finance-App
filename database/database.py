@@ -44,7 +44,7 @@ class Database:
     def get_all_transactions(self):
 
         query = """
-        SELECT id, type, amount, category, description, date
+        SELECT id, type, amount, category, subcategory, description, date
         FROM transactions
         ORDER BY date DESC, id DESC
         """
@@ -58,6 +58,7 @@ class Database:
                 type=row["type"],
                 amount=row["amount"],
                 category=row["category"],
+                subcategory=row["subcategory"],
                 description=row["description"],
                 date=row["date"]
             )
@@ -97,7 +98,24 @@ class Database:
             "expense": expense,
             "balance": income - expense
         }
-
+    def get_daily_expenses(self, year, month):
+        year = int(year)
+        month = int(month)
+        last_day = calendar.monthrange(year, month)[1]
+        month_str = f"{month:02d}"
+        start_date = f"{year}-{month_str}-01"
+        end_date = f"{year}-{month_str}-{last_day:02d}"
+        query = """
+                SELECT date, SUM(amount) AS total
+                FROM transactions
+                WHERE type ='expense'
+                AND date BETWEEN ? AND ?
+                GROUP BY date
+                ORDER BY date
+                """
+        with self._connect() as conn:
+            rows = conn.execute(query, (start_date, end_date)).fetchall()
+        return [(row["date"], row["total"]) for row in rows]
     def get_category_stats(self, year, month):
         year = int(year)
         month = int(month)
@@ -137,13 +155,13 @@ class Database:
         with self._connect() as conn:
             rows = conn.execute(query, (category, start_date, end_date)).fetchall()
         return {row["subcategory"]: row["total"] for row in rows}
-    def update_transaction(self, transaction_id, type_, amount, category, description, date):
+    def update_transaction(self, transaction_id, type_, amount, category, subcategory, description, date):
         type_ = type_.lower()
         query = """
-                UPDATE transactions SET type = ?, amount = ?, category = ?, description = ?, date = ? WHERE id = ?
+                UPDATE transactions SET type = ?, amount = ?, category = ?, subcategory = ?, description = ?, date = ? WHERE id = ?
                 """
         with self._connect() as conn:
-            cur = conn.execute(query,(type_, amount, category, description, date, transaction_id))
+            cur = conn.execute(query,(type_, amount, category, subcategory, description, date, transaction_id))
             conn.commit()
             return cur.rowcount
     def delete_transaction(self, transaction_id):
@@ -164,6 +182,7 @@ class Database:
                     type=row['type'],
                     amount=row['amount'],
                     category=row['category'],
+                    subcategory=row['subcategory'],
                     description=row['description'],
                     date=row['date']
                 )
