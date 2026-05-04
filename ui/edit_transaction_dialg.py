@@ -21,6 +21,9 @@ class EditTransactionDialog(QDialog):
         layout.addWidget(QLabel("Category"))
         self.category_input = QLineEdit()
         layout.addWidget(self.category_input)
+        layout.addWidget(QLabel("Subcategory"))
+        self.subcategory_input = QLineEdit()
+        layout.addWidget(self.subcategory_input)
         layout.addWidget(QLabel("Description"))
         self.desc_input = QLineEdit()
         layout.addWidget(self.desc_input)
@@ -41,12 +44,15 @@ class EditTransactionDialog(QDialog):
         self.setLayout(layout)
         self.load_transaction()
     def load_transaction(self):
+        if self.transaction_id is None:
+            return
         trans = self.db.get_transaction_by_id(self.transaction_id)
         if not trans:
             return
         self.type_combo.setCurrentText(trans.type.capitalize())
         self.amount_input.setText(str(trans.amount))
-        self.category_input.setText(trans.category)
+        self.category_input.setText(trans.category or "")
+        self.subcategory_input.setText(getattr(trans, "subcategory", "") or "")
         self.desc_input.setText(trans.description or "")
         try:
             y,m,d = map(int, trans.date.split('-'))
@@ -61,11 +67,13 @@ class EditTransactionDialog(QDialog):
                 return
             amount = float(amount_text)
             date_str = self.date_input.date().toString("yyyy-MM-dd")
+            subcategory = self.subcategory_input.text().strip() or None
             updated = self.db.update_transaction(
             self.transaction_id,
             self.type_combo.currentText(),
             amount,
             self.category_input.text().strip(),
+            subcategory,
             self.desc_input.text().strip(),
             date_str
             )
