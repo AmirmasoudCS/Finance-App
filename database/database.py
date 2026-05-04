@@ -22,6 +22,7 @@ class Database:
             type TEXT NOT NULL,
             amount REAL NOT NULL,
             category TEXT NOT NULL,
+            subcategory TEXT,
             description TEXT,
             date TEXT NOT NULL
         )
@@ -30,15 +31,15 @@ class Database:
         with self._connect() as conn:
             conn.execute(query)
 
-    def add_transaction(self, type_, amount, category, description, date):
+    def add_transaction(self, type_, amount, category, subcategory, description, date):
         type_ = type_.lower()
         query = """
-        INSERT INTO transactions(type, amount, category, description, date)
-        VALUES(?, ?, ?, ?, ?)
+        INSERT INTO transactions(type, amount, category, subcategory, description, date)
+        VALUES(?, ?, ?, ?, ?, ?)
         """
 
         with self._connect() as conn:
-            conn.execute(query, (type_, amount, category, description, date))
+            conn.execute(query, (type_, amount, category, subcategory, description, date))
 
     def get_all_transactions(self):
 
@@ -117,6 +118,25 @@ class Database:
             rows = conn.execute(query, (start_date, end_date)).fetchall()
 
         return {row["category"]: row["total"] for row in rows}
+    def get_subcategory_stats(self, year, month, category):
+        year = int(year)
+        month = int(month)
+        last_day = calendar.monthrange(year, month)[1]
+        month_str = f"{month:02d}"
+        start_date = f"{year}-{month_str}-01"
+        end_date = f"{year}-{month_str}-{last_day:02d}"
+        query = """
+                SELECT subcategory, SUM(amount) AS total
+                FROM transactions 
+                WHERE type = 'expense'
+                AND category=?
+                AND date BETWEEN ? AND ?
+                GROUP BY subcategory
+                ORDER BY total DESC
+                """
+        with self._connect() as conn:
+            rows = conn.execute(query, (category, start_date, end_date)).fetchall()
+        return {row["subcategory"]: row["total"] for row in rows}
     def update_transaction(self, transaction_id, type_, amount, category, description, date):
         type_ = type_.lower()
         query = """
