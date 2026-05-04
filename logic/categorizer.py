@@ -41,9 +41,8 @@ class TransactionCategorizer:
         }
         self.default_category = "Other"
     def preprocess(self, text:str) -> list[str]:
-        text = text.lower()
-        words = re.findall(r"\b\w+\b", text)
-        return words
+        text = re.sub(r"[^\w\s]", "", text.lower())
+        return text.split()
     def categorize(self, description: str) -> tuple[str, Optional[str]]:
         words = self.preprocess(description)
         category_votes : Dict[str, int] = defaultdict(int)
