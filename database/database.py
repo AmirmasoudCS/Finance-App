@@ -40,6 +40,7 @@ class Database:
 
         with self._connect() as conn:
             conn.execute(query, (type_, amount, category, subcategory, description, date))
+            conn.commit()
 
     def get_all_transactions(self):
 
@@ -170,6 +171,7 @@ class Database:
                 """
         with self._connect() as conn:
             conn.execute(query,(transaction_id,))
+            conn.commit()
     def get_transaction_by_id(self, transaction_id):
         query = """
                 SELECT * FROM transactions WHERE id = ?
