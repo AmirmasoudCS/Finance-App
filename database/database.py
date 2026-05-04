@@ -145,7 +145,7 @@ class Database:
         start_date = f"{year}-{month_str}-01"
         end_date = f"{year}-{month_str}-{last_day:02d}"
         query = """
-                SELECT subcategory, SUM(amount) AS total
+                SELECT COALESCE(subcategory, 'Other') AS subcategory, SUM(amount) AS total
                 FROM transactions 
                 WHERE type = 'expense'
                 AND category=?
