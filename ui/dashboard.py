@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton, QMessageBox, QFrame, QAbstractItemView
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QDateTime
+from PySide6.QtCharts import QChart, QChartView, QPieSeries, QLineSeries, QDateTimeAxis, QValueAxis
 from datetime import datetime
 from database.database import Database
 class DashboardPage(QWidget):
@@ -59,7 +60,78 @@ class DashboardPage(QWidget):
         self.recent_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.recent_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         main_layout.addWidget(self.recent_table)
+        chart_title = QLabel("Spending Analytics")
+        chart_title.setStyleSheet("font-size : 13px; font-weight : bold;")
+        main_layout.addWidget(chart_title)
+        self.category_chart_view = QChartView()
+        self.subcategory_chart_view = QChartView()
+        self.trend_chart_view = QChartView()
+        main_layout.addWidget(self.category_chart_view)
+        main_layout.addWidget(self.subcategory_chart_view)
+        main_layout.addWidget(self.trend_chart_view)
         self.setLayout(main_layout)
+    def load_category_chart(self, year, month):
+        stats = self.db.get_category_stats(year, month)
+        if not stats:
+            chart = QChart()
+            chart.setTitle("No data for this month")
+            self.category_chart_view.setChart(chart)
+            return
+        series = QPieSeries()
+        for category, total in stats.items():
+            series.append(category, total)
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Expense Breakdown by Category")
+        chart.legend().setVisible(True)
+        for slice in series.slices():
+            category_name = slice.label()
+            percent = (slice.percentage() * 100)
+            slice.setLabel(f"{category_name} ({percent:.1f}%)")
+            slice.clicked.connect(lambda checked=False, c=category_name : self.load_subcategory_chart(year, month, c))
+        self.category_chart_view.setChart(chart)
+    def load_subcategory_chart(self, year, month, category):
+        stats = self.db.get_subcategory_stats(year, month, category)
+        series = QPieSeries()
+        for subcat, total in stats.items():
+            name = subcat if subcat else "Other"
+            series.append(name, total)
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle(f"Subcategories of {category}")
+        chart.legend().setVisible(True)
+        self.subcategory_chart_view.setChart(chart)
+    def load_trend_chart(self, year, month):
+        points = self.db.get_daily_expenses(year, month)
+        series = QLineSeries()
+        for date_str, total in points:
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            timestamp = int(dt.timestamp() * 1000)
+            series.append(timestamp, total)
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Daily Expense Trend")
+        axis_x = QDateTimeAxis()
+        axis_x.setFormat("dd MMM")
+        axis_x.setTitleText("Date")
+        axis_y = QValueAxis()
+        axis_y.setTitleText("Amount")
+        if points:
+            first_dt = datetime.strptime(points[0][0], "%Y-%m-%d")
+            last_dt = datetime.strptime(points[-1][0], "%Y-%m-%d")
+            axis_x.setMin(QDateTime.fromMSecsSinceEpoch(int(first_dt.timestamp() * 1000)))
+            axis_x.setMax(QDateTime.fromMSecsSinceEpoch(int(last_dt.timestamp() * 1000)))
+            totals = [total for _, total in points]
+            min_val = min(totals)
+            max_val = max(totals)
+            axis_y.setRange(min_val * 0.9, max_val * 1.1)
+        else:
+            chart.setTitle("No data for this month")
+        chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
+        chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
+        series.attachAxis(axis_x)
+        series.attachAxis(axis_y)
+        self.trend_chart_view.setChart(chart)
     def refresh_dashboard(self):
         try:
             now = datetime.now()
@@ -88,6 +160,11 @@ class DashboardPage(QWidget):
                 self.recent_table.setItem(row_idx, 1, QTableWidgetItem(trans.type))
                 self.recent_table.setItem(row_idx, 2, QTableWidgetItem(trans.category))
                 self.recent_table.setItem(row_idx, 3, QTableWidgetItem(f"{trans.amount:.2f}"))
+            self.load_category_chart(year, month)
+            self.load_trend_chart(year, month)
+            chart = QChart()
+            chart.setTitle("Click a category to see subcategories")
+            self.subcategory_chart_view.setChart(chart)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load dashboard.\n{e}")
 
