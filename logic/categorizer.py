@@ -2,6 +2,8 @@
 import re
 from typing import Dict, Tuple, Optional
 from collections import defaultdict
+from nltk.stem import PorterStemmer
+from rapidfuzz import fuzz
 class TransactionCategorizer:
     def __init__(self):
         self.rules ={
@@ -40,16 +42,20 @@ class TransactionCategorizer:
             }
         }
         self.default_category = "Other"
+        self.stemmer = PorterStemmer()
     def preprocess(self, text:str) -> list[str]:
         text = re.sub(r"[^\w\s]", "", text.lower())
         return text.split()
+    def stem(self, words: list[str]) -> list[str]:
+        return [self.stemmer.stem(w) for w in words]
     def categorize(self, description: str) -> tuple[str, Optional[str]]:
-        words = self.preprocess(description)
+        words = self.stem(self.preprocess(description))
         category_votes : Dict[str, int] = defaultdict(int)
         subcategory_votes : Dict[Tuple[str, str], int] = defaultdict(int)
         for category, subcats in self.rules.items():
             for subcat, keywords in subcats.items():
-                if any(word in keywords for word in words):
+                stemmed_keywords = {self.stemmer.stem(k) for k in keywords}
+                if any(w in stemmed_keywords or fuzz.partial_ratio(w, kw) > 85 for w in words for kw in keywords):
                     category_votes[category] += 1
                     subcategory_votes[(category, subcat)] += 1
         if not category_votes:
