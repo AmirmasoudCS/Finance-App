@@ -5,5 +5,6 @@ class Transaction:
     type : str
     amount : float
     category : str
+    subcategory : str
     description : str
     date : str
