@@ -6,7 +6,7 @@ class TransactionCategorizer:
         self.rules ={
             "Food" : {"grocery", "food", "restaurant", "pizza", "snack", "coffee", "burger"},
             "Transport" : {"snap", "snapp", "taxi", "uber", "bus", "train", "fuel", "parking", "plane", "airplane", "air-plane"},
-            "Income" : {"salary", "bonus", "income", "paycheck", "payment"},
+            "Income" : {"salary", "bonus", "income", "paycheck", "payment", "bank profit", "profit", "monthly profit"},
             "Health" : {"medicine", "doctor", "hospital", "pharmacy", "clinic"},
             "Shopping" : {"clothes", "shoe", "shopping", "mall", "gift"},
             "Utilities": {"electric", "water", "internet", "wifi", "utility", "bill", "gas-bill", "gas"},
